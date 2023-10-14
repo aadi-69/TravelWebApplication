@@ -21,7 +21,7 @@ const travelSchema = new Schema({
   username: String,
   fromPlace: String,
   toPlace: String,
-  dateTime: Date,
+  dateTime: String,
   numOfPeople: Number,
   modeOfTransport: String,
   carDriverName: String,
@@ -89,8 +89,9 @@ app.get('/search', (req, res) => {
 app.get('/searchJSON', (req, res) => {
   const mode = req.query.mode;
   const no = req.query.no;
+  const user = req.query.username
 
-  TravelModel.find({ numOfPeople: parseInt(no), modeOfTransport: mode })
+  TravelModel.find({ username: user, numOfPeople: parseInt(no), modeOfTransport: mode })
     .then((data) => {
       res.json(data);
     })

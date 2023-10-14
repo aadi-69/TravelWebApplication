@@ -10,11 +10,13 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
+            background: url('fmt.jpg') no-repeat center center fixed;
+            background-size: cover;
             margin: 0;
             padding: 0;
+            color: white;
+            font-size: 18px;
         }
-
         .container {
             max-width: 600px;
             margin: 20px auto;
@@ -55,12 +57,18 @@
         button:hover {
             background-color: #555;
         }
+
+        #home {
+            background: rgba(255, 255, 255, 0.142);
+            /* Adjust the last value (0.7) for transparency */
+            border: 1px solid #ccc;
+        }
     </style>
 </head>
 
 <body>
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Travel Details</h1>
+    <div class="container mt-5" id="home">
+        <div class="text-center">Travel Details</div>
         <form id="travelForm">
             <div class="form-group">
                 <label for="fromPlace">From Place:</label>
@@ -156,6 +164,7 @@
             </div>
 
             <button type="button" class="btn btn-primary" id="submit">Submit</button>
+            <button type="button" class="btn btn-danger" id="cancel">Cancel</button>
             <div id="liveAlertPlaceholder"></div>
             <br>
             <div class="spinner-border text-success" role="status" style="display: none;" id="spinner">
@@ -173,6 +182,10 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
     <script>
+
+        $("#cancel").click(()=>{
+            window.location.href = "/getHome";
+        });
 
         function initAutocomplete() {
             $.ajax({
@@ -280,88 +293,88 @@
         const submitForm = document.getElementById("submit");
 
         submitForm.addEventListener("click", function () {
-            // Collect form data using document.getElementById
-            const fromPlace = document.getElementById("fromPlace").value;
-            const toPlace = document.getElementById("toPlace").value;
-            const dateTime = document.getElementById("dateTime").value;
-            const numOfPeople = document.getElementById("numOfPeople").value;
-            const modeOfTransport = document.getElementById("modeOfTransport").value;
-            var username = '';
+
+            let formData;
 
             fetch('/getUsername').then((data) => {
                 return data.text();
             }).then((data) => {
                 username = data;
-            }).catch((error) => {
-                console.error('Fetch error:', error);
+                const fromPlace = document.getElementById("fromPlace").value;
+                const toPlace = document.getElementById("toPlace").value;
+                const dateTime = document.getElementById("dateTime").value;
+                const numOfPeople = document.getElementById("numOfPeople").value;
+                const modeOfTransport = document.getElementById("modeOfTransport").value;
+
+                formData = {
+                    username,
+                    fromPlace,
+                    toPlace,
+                    dateTime,
+                    numOfPeople,
+                    modeOfTransport,
+                };
+
+
+                // Depending on the mode of transport, add additional fields to the formData object
+                switch (modeOfTransport) {
+                    case "Car":
+                        formData.carDriverName = document.getElementById("carDriverName").value;
+                        formData.carNumber = document.getElementById("carNumber").value;
+                        formData.selectedCar = document.getElementById("selectedCar").value;
+                        formData.numOfSeats = document.getElementById("numOfSeats").value;
+                        break;
+                    case "Train":
+                        formData.trainNumber = document.getElementById("trainNumber").value;
+                        formData.trainName = document.getElementById("trainName").value;
+                        break;
+                    case "Bus":
+                        formData.busNumber = document.getElementById("busNumber").value;
+                        formData.busStandLocation = document.getElementById("busStandLocation").value;
+                        break;
+                    case "Plane":
+                        formData.flightNumber = document.getElementById("flightNumber").value;
+                        formData.flightName = document.getElementById("flightName").value;
+                        break;
+                    default:
+                        break;
+                }
+
+
+                // Convert formData to JSON
+                const jsonData = JSON.stringify(formData);
+
+                // Send the JSON data to the server using a GET request
+                fetch(`/save?data=${jsonData}`, {
+                    method: "GET",
+                })
+                    .then((response) => response.text())
+                    .then((data) => {
+                        document.getElementById("spinner").style.display = "block";
+                        setTimeout(() => {
+                            document.getElementById("spinner").style.display = "none";
+                            setTimeout(() => {
+                                appendAlert("Nice, your Data has been saved Successfully! You'll be Redirected Now", 'success')
+                            }, 1000); // 2 seconds for the green alert
+                        }, 2000); // 2 seconds for the spinner
+
+                        setTimeout(() => {
+                            window.location.href = "/getHome"; // Change this to the desired URL
+                        }, 5000);
+
+                    })
+                    .catch((error) => {
+                        appendAlert("Oops! Some error occured! Please Try Again", 'danger')
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 3000);
+                        console.error("Error sending form data:", error);
+                    });
             });
 
-            // Create an object to store the form data
-            const formData = {
-                username,
-                fromPlace,
-                toPlace,
-                dateTime,
-                numOfPeople,
-                modeOfTransport,
-            };
-
-            // Depending on the mode of transport, add additional fields to the formData object
-            switch (modeOfTransport) {
-                case "Car":
-                    formData.carDriverName = document.getElementById("carDriverName").value;
-                    formData.carNumber = document.getElementById("carNumber").value;
-                    formData.selectedCar = document.getElementById("selectedCar").value;
-                    formData.numOfSeats = document.getElementById("numOfSeats").value;
-                    break;
-                case "Train":
-                    formData.trainNumber = document.getElementById("trainNumber").value;
-                    formData.trainName = document.getElementById("trainName").value;
-                    break;
-                case "Bus":
-                    formData.busNumber = document.getElementById("busNumber").value;
-                    formData.busStandLocation = document.getElementById("busStandLocation").value;
-                    break;
-                case "Plane":
-                    formData.flightNumber = document.getElementById("flightNumber").value;
-                    formData.flightName = document.getElementById("flightName").value;
-                    break;
-                default:
-                    break;
-            }
-
-
-            // Convert formData to JSON
-            const jsonData = JSON.stringify(formData);
-
-            // Send the JSON data to the server using a GET request
-            fetch(`/save?data=${jsonData}`, {
-                method: "GET",
-            })
-                .then((response) => response.text())
-                .then((data) => {
-                    document.getElementById("spinner").style.display = "block";
-                    setTimeout(() => {
-                        document.getElementById("spinner").style.display = "none";
-                        setTimeout(() => {
-                            appendAlert("Nice, your Data has been saved Successfully! You'll be Redirected Now", 'success')
-                        }, 1000); // 2 seconds for the green alert
-                    }, 2000); // 2 seconds for the spinner
-
-                    setTimeout(() => {
-                        window.location.href = "/getHome"; // Change this to the desired URL
-                    }, 5000);
-
-                })
-                .catch((error) => {
-                    appendAlert("Oops! Some error occured! Please Try Again", 'danger')
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 3000);
-                    console.error("Error sending form data:", error);
-                });
+        }).catch((error) => {
+            console.error('Fetch error:', error);
         });
-
     </script>
 </body>
 
