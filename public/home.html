@@ -103,8 +103,6 @@
             }
         }
 
-
-
         @media (min-width: 820px) and (max-width: 1180px) {
             .navbar-nav {
                 flex-direction: column;
@@ -185,14 +183,24 @@
 
     <script>
         $(document).ready(() => {
-            fetch('/getUsername').then((data) => {
-                return data.text();
-            }).then((data) => {
-                console.log(data)
-                $("#username").text("Hello " + data + "!");
-            }).catch((error) => {
-                console.error('Fetch error:', error);
-            });
+
+            if (sessionStorage.getItem("username") == null)
+                fetch('/getUsername').then((data) => {
+                    return data.text();
+                }).then((data) => {
+                    console.log(data)
+                    $("#username").text("Hello " + data + "!");
+                    sessionStorage.setItem("username", data)
+                    console.log("bugging");
+                }).catch((error) => {
+                    console.error('Fetch error:', error);
+                });
+            else
+            {
+                $("#username").text("Hello " + sessionStorage.getItem("username") + "!");
+                console.log("debuing");
+            }
+
         });
 
         const hoverIcon = document.getElementById('hover-icon');

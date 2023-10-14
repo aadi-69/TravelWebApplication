@@ -207,35 +207,28 @@
                                 const resultBody = $("#resultBody");
                                 resultBody.empty();
 
-                                fetch('/getUsername').then((dat) => {
-                                    return dat.text()
-                                }).then((dat) => {
+                                console.log(data)
 
-                                    console.log(dat)
+                                data.forEach((item) => {
 
-                                    data.forEach((item) => {
+                                    if (sessionStorage.getItem("username") == item.username)
+                                        return;
 
-                                        if (dat == item.username)
-                                            return;
+                                    const dateTime = new Date(item.dateTime);
+                                    const formattedDate = `${dateTime.getHours()}:${dateTime.getMinutes()} ${dateTime.getDate()}/${dateTime.getMonth() + 1}/${dateTime.getFullYear()}`;
 
-                                        const dateTime = new Date(item.dateTime);
-                                        const formattedDate = `${dateTime.getHours()}:${dateTime.getMinutes()} ${dateTime.getDate()}/${dateTime.getMonth() + 1}/${dateTime.getFullYear()}`;
+                                    resultBody.append(`<tr>
+                                    <td>${item.username}</td>
+                                    <td>${item.modeOfTransport}</td>
+                                    <td>${formattedDate}</td>
+                                    <td>${item.numOfPeople}</td>
+                                    <td><button class="btn btn-primary" id="details">Show Details</button></td>
+                                    </tr>`);
+                                });
 
-                                        resultBody.append(`<tr>
-                                            <td>${item.username}</td>
-                                            <td>${item.modeOfTransport}</td>
-                                            <td>${formattedDate}</td>
-                                            <td>${item.numOfPeople}</td>
-                                            <td><button class="btn btn-primary" id="details">Show Details</button></td>
-                                            </tr>`);
-                                    });
-
-                                    $("#resultTable").show();
+                                $("#resultTable").show();
 
 
-                                }).catch((error) => {
-                                    console.log(error);
-                                })
                             }
 
                             // Hide the spinner after loading the data
