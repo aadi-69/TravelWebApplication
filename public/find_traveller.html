@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Find your Traveller</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container mt-4">
+        <h1>Search Traveller</h1>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="fromInput">From:</label>
+                <input type="text" id="fromPlace" class="form-control">
+            </div>
+            <div class="form-group col-md-6">
+                <label for="toInput">To:</label>
+                <input type="text" id="toPlace" class="form-control">
+            </div>
+        </div>
+        <div class="alert alert-warning" role="alert" id="alert">
+            Please Fill in all the Details!
+        </div>
+        <div class="alert alert-success" role="alert" id="cfmbooking">
+            Your Booking has been Confirmed, you'll be redirected now
+        </div>
+        <button id="searchButton" class="btn btn-primary">Search</button>
+        <div class="spinner-border text-success" role="status" id="spinner"></div>
+
+        <table id="resultTable" class="table mt-4">
+            <thead>
+                <tr>
+                    <th>Mode of Transport</th>
+                    <th>Date & Time</th>
+                    <th>No of People</th>
+                    <th>Click to Show Details</th>
+                </tr>
+            </thead>
+            <tbody id="resultBody"></tbody>
+        </table>
+
+        <!-- Modal for displaying details -->
+        <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="detailsModalLabel">Details</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="detailsContent">
+                        <!-- Details content will be displayed here -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-success" data-dismiss="modal" id="confirm">Confirm
+                            Booking</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Include Bootstrap and jQuery scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <script>
+        function initAutocomplete() {
+            $.ajax({
+                url: 'cities.json', // Path to your JSON file
+                dataType: 'json',
+                success: function (data) {
+                    $("#fromPlace").autocomplete({
+                        source: data
+                    });
+
+                    $("#toPlace").autocomplete({
+                        source: data
+                    });
+                },
+                error: function () {
+                    console.error("Failed to load city data from cities.json");
+                }
+            });
+        }
+
+        // Call the initAutocomplete function when the document is ready
+        $(document).ready(initAutocomplete);
+
+        $(document).ready(() => {
+            $("#resultTable").hide();
+            $("#alert").hide();
+            $("#spinner").hide();
+            $("#cfmbooking").hide();
+        });
+
+        $("#fromPlace").click(() => {
+            $("#alert").hide();
+        })
+
+        $("#toPlace").click(() => {
+            $("#alert").hide();
+        })
+
+        $("#searchButton").click(() => {
+            // Hide the "Search" button
+            $("#searchButton").hide();
+
+            // Show the spinner
+            $("#spinner").show();
+
+            // Delay the data loading by 2 seconds using setTimeout
+            setTimeout(() => {
+                const fromPlace = $("#fromPlace").val();
+                const toPlace = $("#toPlace").val();
+
+                if (fromPlace === '' || toPlace === '') {
+                    $("#spinner").hide(); // Hide the spinner if there's an error
+                    $("#alert").show();
+                } else {
+                    $.ajax({
+                        url: `/search?from=${fromPlace}&to=${toPlace}`,
+                        method: 'GET',
+                        success: function (data) {
+                            const resultBody = $("#resultBody");
+                            resultBody.empty();
+                            data.forEach((item) => {
+                                const dateTime = new Date(item.dateTime);
+                                const formattedDate = `${dateTime.getHours()}:${dateTime.getMinutes()} ${dateTime.getDate()}/${dateTime.getMonth() + 1}/${dateTime.getFullYear()}`;
+
+                                resultBody.append(`<tr>
+                            <td>${item.modeOfTransport}</td>
+                            <td>${formattedDate}</td>
+                            <td>${item.numOfPeople}</td>
+                            <td><button class="btn btn-primary" id="details">Show Details</button></td>
+                        </tr>`);
+                            });
+                            $("#resultTable").show();
+
+                            // Hide the spinner after loading the data
+                            $("#spinner").hide();
+                        },
+                        error: function () {
+                            $("#spinner").hide(); // Hide the spinner if there's an error
+                            console.error("Failed to retrieve data from the server.");
+                            $("#alert").show();
+                        }
+                    });
+                }
+            }, 2000); // Wait for 2 seconds before making the AJAX request
+        });
+
+        // Add a click event handler for the "Show Details" button
+        $("#resultTable").on("click", "#details", function () {
+            const row = $(this).closest("tr"); // Find the closest table row
+            // const details = row.find("td:eq(0)").text()+row.find("td:eq(1)").text();
+
+            // // Set the details content in the modal and display the modal
+            // $("#detailsContent").text(details);
+
+            const modeOfTransport = row.find("td:eq(0)").text();
+            const numOfPeople = row.find("td:eq(2)").text();
+
+
+            $.ajax({
+                url: `/searchJSON?mode=${modeOfTransport}&no=${numOfPeople}`,
+                method: 'GET',
+                success: (data) => {
+                    $("#detailsContent").html(`
+                    From: ${data[0].fromPlace}<br>
+                    To: ${data[0].toPlace}<br>
+                    Date & Time: ${row.find("td:eq(1)").text()}<br>
+                    Number of People: ${data[0].numOfPeople}<br>
+                    Mode of Transport: ${data[0].modeOfTransport}<br>
+                    `);
+
+                    switch (data[0].modeOfTransport) {
+                        case 'Plane':
+                            $("#detailsContent").append(`Flight Number: ${data[0].flightNumber}<br>
+                        Flight Name: ${data[0].flightName}
+                        `);
+                            break
+
+                        case 'Bus':
+                            $("#detailsContent").append(`
+                        Bus Number: ${data[0].busNumber}<br>
+                        Bus-Stand Location: ${data[0].busStandLocation}
+                        `);
+                            break
+
+                        case 'Car':
+                            $("#detailsContent").append(`
+                        Car Driver Name: ${data[0].carDriverName}<br>
+                        Car Number: ${data[0].carNumber}<br>
+                        Selected Car: ${data[0].selectedCar}<br>
+                        Number of Seats: ${data[0].numOfSeats}
+                        `)
+                            break
+
+                        case 'Train':
+                            $("#detailsContent").append(`
+                        Train Number: ${data[0].trainNumber}<br>
+                        Train Namw: ${data[0].trainName}
+                        `)
+                            break
+                    }
+                }
+            })
+            $("#detailsModal").modal("show");
+        });
+
+        $("#confirm").click(() => {
+            $("#cfmbooking").show();
+            setTimeout(() => {
+                window.open('/')
+            }, 2500)
+        })
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Explorer</title>
+    <!-- Add Bootstrap CSS Link -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <style>
+        body {
+            background: url('1431622.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        #hover-icon {
+            position: fixed;
+            top: 13px;
+            right: 25px;
+            z-index: 999;
+        }
+
+        #hover-icon img {
+            width: 29px;
+            height: 30px;
+        }
+
+        .menu-options {
+            display: none;
+            position: absolute;
+            background: rgba(255, 255, 255, 0.7);
+            /* Adjust the last value (0.7) for transparency */
+            border: 1px solid #ccc;
+            padding: 5px;
+            right: 0;
+            top: 30px;
+        }
+
+        .menu-options a {
+            display: block;
+            color: #333;
+            text-decoration: none;
+            padding: 5px;
+        }
+
+        .menu-options a:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        a {
+            cursor: pointer;
+        }
+
+        #home {
+            position: relative;
+            right: 50px;
+        }
+
+        .menu-options {
+            padding-top: 18px;
+            width: 200px;
+            /* Reduced width for better mobile display */
+        }
+
+        .container .jumbotron {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Adjust the navigation bar for smaller screens */
+        @media (max-width: 1000px) {
+            .navbar-nav {
+                flex-direction: column;
+            }
+
+            .navbar-toggler {
+                display: block;
+            }
+
+            .navbar-collapse {
+                margin-top: 10px;
+            }
+
+            #home {
+                position: relative;
+                left: 220px;
+            }
+
+            #hover-icon {
+                position: relative;
+                left: 300px;
+                top: -38px;
+            }
+
+            .menu-options {
+                position: relative;
+                right: 150px;
+            }
+
+            #findt {
+                margin-bottom: 8px;
+            }
+        }
+
+
+
+        @media (min-width: 820px) and (max-width: 1180px) {
+            .navbar-nav {
+                flex-direction: column;
+            }
+
+            .navbar-toggler {
+                display: block;
+            }
+
+            .navbar-collapse {
+                margin-top: 10px;
+            }
+
+            #hover-icon {
+                position: relative;
+                left: 740px;
+                top: -32px;
+            }
+
+            #home {
+                position: relative;
+                left: 640px;
+            }
+
+            .menu-options {
+                position: relative;
+                right: 150px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light" style="background-color: rgba(255, 255, 255, 0.5);">
+        <a class="navbar-brand navv" href="#">Travel Explorer</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active" id="home">
+                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li>
+                    <div id="hover-icon">
+                        <img src="accounticon.png" alt="">
+                        <div class="menu-options">
+                            <div id="username"></div>
+                            <a href="#">Profile</a>
+                            <a href="#">Travel Request</a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Welcome Section -->
+    <div class="container mt-5">
+        <div class="jumbotron">
+            <h1 class="display-4">Welcome to Travel Explorer!</h1>
+            <p class="lead">Find your perfect travel companion or share your travel plans with others.</p>
+            <hr class="my-4">
+            <p>Get started now by selecting one of the options below:</p>
+            <a class="btn btn-primary btn-lg" href="find_traveller.html" role="button" id="findt">Find a Traveler</a>
+            <a class="btn btn-success btn-lg" href="post_travel.html" role="button">Post Your Travel</a>
+        </div>
+    </div>
+
+    <!-- Add Bootstrap JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        $(document).ready(() => {
+            fetch('/getUsername').then((data) => {
+                return data.text();
+            }).then((data) => {
+                console.log(data)
+                $("#username").text("Hello " + data + "!");
+            }).catch((error) => {
+                console.error('Fetch error:', error);
+            });
+        });
+
+        const hoverIcon = document.getElementById('hover-icon');
+        const menuOptions = document.querySelector('.menu-options');
+
+        hoverIcon.addEventListener('mouseenter', () => {
+            menuOptions.style.display = 'block';
+        });
+
+        hoverIcon.addEventListener('mouseleave', () => {
+            menuOptions.style.display = 'none';
+        });
+    </script>
+
+</body>
+
+</html>
