@@ -201,7 +201,7 @@
                         method: 'GET',
                         success: function (data) {
 
-                            if (data.length === 0)
+                            if (data.length === 0 || data[0].username == sessionStorage.getItem('username'))
                                 nothingfound();
                             else {
                                 const resultBody = $("#resultBody");
@@ -267,7 +267,7 @@
                     Username: ${data[0].username}<br>
                     From: ${data[0].fromPlace}<br>
                     To: ${data[0].toPlace}<br>
-                    Date & Time: ${row.find("td:eq(1)").text()}<br>
+                    Date & Time: ${row.find("td:eq(2)").text()}<br>
                     Number of People: ${data[0].numOfPeople}<br>
                     Mode of Transport: ${data[0].modeOfTransport}<br>
                     `);
