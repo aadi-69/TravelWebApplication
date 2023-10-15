@@ -64,7 +64,6 @@ app.get('/save', (req, res) => {
   // Save the document to the MongoDB collection using Promises
   travelData.save()
     .then(() => {
-      console.log('Form data saved to MongoDB:', travelData);
       res.send('Form data received and saved to MongoDB');
     })
     .catch((err) => {
@@ -103,7 +102,6 @@ app.get('/searchJSON', (req, res) => {
 app.get('/getHome', (req, res) => {
   res.sendFile(__dirname + '/public/home.html')
 })
-
 
 const loginSchema = new mongoose.Schema({
   email: String,
