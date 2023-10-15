@@ -135,7 +135,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-
 app.post('/signup', async (req, res) => {
   const { email, username, password } = req.body;
 
@@ -159,6 +158,77 @@ app.post('/signup', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
+mongoose.createConnection('mongodb://localhost/Request', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const requestDb = mongoose.connection;
+requestDb.on('error', console.error.bind(console, 'MongoDB Request connection error:'));
+
+requestDb.once('open', () => {
+  console.log('Connected to MongoDB for Requests');
+});
+
+const requestSchema = new mongoose.Schema({
+  username: String,
+  ObjectID: String
+});
+
+const RequestModel = requestDb.model('Request', requestSchema);
+
+
+mongoose.createConnection('mongodb://localhost/Pending', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const pendingDb = mongoose.connection;
+pendingDb.on('error', console.error.bind(console, 'MongoDB Request connection error:'));
+
+pendingDb.once('open', () => {
+  console.log('Connected to MongoDB for Pending');
+});
+
+const PendingSchema = new mongoose.Schema({
+  username: String,
+  ObjectID: String
+});
+
+const PendingModel = requestDb.model('Pending', PendingSchema);
+
+app.get('/submitRequest', async (req, res) => {
+  const username = req.query.name;
+  const id = req.query.id;
+
+  console.log(username + " " + id);
+
+  const requestData = new RequestModel({ username, id });
+  await requestData.save().then(savedAccept => {
+  })
+    .catch(err => {
+      if (err.code === 11000) {
+        console.error('Duplicate key error:');
+      } else {
+        console.error('Error while saving:', err);
+      }
+    });
+
+  const pendingData = new PendingModel({ username, id });
+  await pendingData.save().then(savedAccept => {
+  })
+    .catch(err => {
+      if (err.code === 11000) {
+        console.error('Duplicate key error:');
+      } else {
+        console.error('Error while saving:', err);
+      }
+    });
+
+  res.status(200).send("");
+})
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

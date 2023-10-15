@@ -263,6 +263,7 @@
                 method: 'GET',
                 success: (data) => {
                     console.log(data);
+                    sessionStorage.setItem("RequestObjectID",data[0]._id);
                     $("#detailsContent").html(`
                     Username: ${data[0].username}<br>
                     From: ${data[0].fromPlace}<br>
@@ -309,7 +310,14 @@
 
         $("#confirm").click(() => {
 
-            
+            $.ajax({
+                url: `/submitRequest?name=${sessionStorage.getItem('username')}&id=${sessionStorage.getItem('RequestObjectID')}`,
+                method: 'GET',
+                success: (data)=>{
+                    
+                }
+
+            });
 
             $("#cfmbooking").show();
 
