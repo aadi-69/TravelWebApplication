@@ -173,11 +173,11 @@ requestDb.once('open', () => {
 
 const requestSchema = new mongoose.Schema({
   username: String,
-  ObjectID: String
+  ObjectID: String,
+  status: String
 });
 
 const RequestModel = requestDb.model('Request', requestSchema);
-
 
 mongoose.createConnection('mongodb://localhost/Pending', {
   useNewUrlParser: true,
@@ -193,7 +193,8 @@ pendingDb.once('open', () => {
 
 const PendingSchema = new mongoose.Schema({
   username: String,
-  ObjectID: String
+  ObjectID: String,
+  status: String
 });
 
 const PendingModel = requestDb.model('Pending', PendingSchema);
@@ -204,7 +205,7 @@ app.get('/submitRequest', async (req, res) => {
 
   console.log(username + " " + id);
 
-  const requestData = new RequestModel({ username, id });
+  const requestData = new RequestModel({ username, id, status: "false" });
   await requestData.save().then(savedAccept => {
   })
     .catch(err => {
@@ -215,7 +216,7 @@ app.get('/submitRequest', async (req, res) => {
       }
     });
 
-  const pendingData = new PendingModel({ username, id });
+  const pendingData = new PendingModel({ username, id, status: "false" });
   await pendingData.save().then(savedAccept => {
   })
     .catch(err => {
@@ -229,6 +230,23 @@ app.get('/submitRequest', async (req, res) => {
   res.status(200).send("");
 })
 
+app.get('/getDetailsForPendingRequest', async (req, res) => {
+  const username = req.query.name;
+  data = await PendingModel.find({ 'username': username });
+
+  if (data[0] == undefined)
+    res.send("No new Requests")
+  else {
+
+    const fetchId = data[0]._id;
+    if (fetchId == undefined)
+      res.send("No new Requests")
+    else {
+      newData = await TravelModel.find(fetchId);
+      res.json(newData);
+    }
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
