@@ -36,7 +36,15 @@ const travelSchema = new Schema({
   flightName: String,
 });
 
+const TravelModel = mongoose.model('Travel', travelSchema);
 
+mongoose.createConnection('mongodb://localhost/Login', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const loginDb = mongoose.connection;
+loginDb.on('error', console.error.bind(console, 'MongoDB Login connection error:'));
 
 loginDb.once('open', () => {
   console.log('Connected to MongoDB for Login');
@@ -94,16 +102,6 @@ app.get('/searchJSON', (req, res) => {
 app.get('/getHome', (req, res) => {
   res.sendFile(__dirname + '/public/home.html')
 })
-
-const TravelModel = mongoose.model('Travel', travelSchema);
-
-mongoose.createConnection('mongodb://localhost/Login', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-const loginDb = mongoose.connection;
-loginDb.on('error', console.error.bind(console, 'MongoDB Login connection error:'));
 
 const loginSchema = new mongoose.Schema({
   email: String,
