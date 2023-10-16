@@ -238,30 +238,30 @@ app.get('/getDetailsForPendingRequest', async (req, res) => {
     res.send("No new Requests");
   } else {
     const results = [];
-  
+
     for (const user of data) {
       if (user._id) {
         const fetchId = user._id;
-  
+
         const newData = await TravelModel.findById(fetchId);
         if (newData) {
           results.push(newData);
         }
       }
     }
-  
+
     if (results.length === 0) {
       res.send("No matching data found");
     } else {
       res.json(results);
     }
   }
-  
+
 });
 
 app.get('/getDetailsForApprovalOrDenail', async (req, res) => {
   const username = req.query.name;
-  let data = '';
+  let data = [];
   const users = await PendingModel.find({});
   const promises = [];
 
@@ -274,23 +274,34 @@ app.get('/getDetailsForApprovalOrDenail', async (req, res) => {
   const user2Results = await Promise.all(promises);
 
   // Now you can process the results
-  user2Results.forEach((user2) => {
+  user2Results.forEach(async (user2) => {
     if (user2 && user2.username === username) {
-      data = user2;
+      async function getUsername() {
+        const newusername = await PendingModel.findById(user2._id);
+        return newusername.username;
+      }
+
+      const updateUsername = await getUsername();
+
+      console.log(updateUsername);
+
+      user2.username = updateUsername;
+
+      console.log(user2);
+
+      data.push(user2);
     }
   });
 
-  if (data) {
+  console.log(data+" chek")
+
+  if (data.length > 0) {
     res.json(data);
-  }
-  else {
+  } else {
     res.send("No new Approval/Denial Requests");
   }
-
-
-
-
 });
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
