@@ -137,6 +137,11 @@
                     const item = JSON.parse(data);
                     console.log(item);
 
+                    if (item.username == username) {
+                        $("#resultTable2").hide();
+                        $("#alert2").show();
+                    }
+
                     const dateTime = new Date(item.dateTime);
                     const formattedDate = `${dateTime.getHours()}:${dateTime.getMinutes()} ${dateTime.getDate()}/${dateTime.getMonth() + 1}/${dateTime.getFullYear()}`;
                     resultBody2.append(`
@@ -150,8 +155,6 @@
                                         </td>
                                     </tr>
                         `);
-
-
                 }
                 else {
                     $("#resultTable2").hide();
