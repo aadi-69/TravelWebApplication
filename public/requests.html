@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage requests</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background: url('1431786.jpg') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+            font-size: 18px;
+        }
+
+        #status {
+            background-color: rgb(251, 176, 176);
+        }
+
+        #status2 {
+            background-color: rgb(164, 247, 159);
+        }
+
+        #reload {
+            position: relative;
+            left: 1137px;
+            top: 60px;
+        }
+
+        #back {
+            position: relative;
+            left: 1150px;
+            top: 60px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-4">
+        <button type="button" class="btn btn-warning" onclick="window.location.reload()" id="reload">Refresh</button>
+        <button type="button" class="btn btn-danger" onclick="getHome()" id="back">Back</button>
+        <h1>Pending Requests </h1>
+        <div class="alert alert-danger" role="alert" id="alert">
+            You have no new requests!
+        </div>
+        <table id="resultTable" class="table mt-4">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Mode of Transport</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="resultBody"></tbody>
+        </table>
+
+        <h1>Pending Approvals</h1>
+        <div class="alert alert-danger" role="alert" id="alert2">
+            Nothing to Approve/Decline at this moment!
+        </div>
+        <table id="resultTable2" class="table mt-4">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Mode of Transport</th>
+                    <th>Date & Time</th>
+                    <th>Approve/Decline</th>
+                </tr>
+            </thead>
+            <tbody id="resultBody2"></tbody>
+        </table>
+
+    </div>
+
+    <!-- Modal for displaying details -->
+    <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailsModalLabel">Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="detailsContent">
+                    <!-- Details content will be displayed here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script>
+        function getHome() {
+            window.location.href = '/getHome'
+        }
+
+        $(document).ready(() => {
+            $("#detailsModal").hide();
+            $("#alert").hide();
+            $("#alert2").hide();
+        });
+
+        const username = sessionStorage.getItem('username');
+        const resultBody = $("#resultBody");
+        const resultBody2 = $("#resultBody2");
+
+        $.ajax({
+            url: `/getDetailsForPendingRequest?name=${username}`,
+            method: 'GET',
+            success: (data) => {
+                console.log(data)
+
+                if (data != "No new Requests")
+
+                    data.forEach((item) => {
+
+                        fetch(`/getStatus?id=${item._id}`).then((data) => {
+                            return data.text();
+                        }).then((data) => {
+                            data = JSON.parse(data)
+
+                            const dateTime = new Date(item.dateTime);
+                            const formattedDate = `${dateTime.getHours()}:${dateTime.getMinutes()} ${dateTime.getDate()}/${dateTime.getMonth() + 1}/${dateTime.getFullYear()}`;
+
+                            if (data.status != "true")
+                                resultBody.append(`
+                                    <tr>
+                                    <td>${item.username}</td>
+                                    <td>${item.modeOfTransport}</td>
+                                    <td>${formattedDate}</td>
+                                    <td id="status">Pending</td>
+                                    </tr>
+                        `)
+                            else
+                                resultBody.append(`
+                                    <tr>
+                                    <td>${item.username}</td>
+                                    <td>${item.modeOfTransport}</td>
+                                    <td>${formattedDate}</td>
+                                    <td id="status2">Approved</td>
+                                    </tr>
+                        `);
+
+                        });
+                    });
+                else {
+                    $("#resultTable").hide();
+                    $("#alert").show();
+                }
+            }
+        });
+
+        $.ajax({
+            url: `/getDetailsForApprovalOrDenail?name=${username}`,
+            method: 'GET',
+            success: (data) => {
+                // console.log(data)
+
+                if (data != "No new Approval/Denial Requests") {
+
+                    const item = JSON.parse(data);
+                    console.log(item);
+
+                    if (item.username == username) {
+                        $("#resultTable2").hide();
+                        $("#alert2").show();
+                    }
+
+                    const dateTime = new Date(item.dateTime);
+                    const formattedDate = `${dateTime.getHours()}:${dateTime.getMinutes()} ${dateTime.getDate()}/${dateTime.getMonth() + 1}/${dateTime.getFullYear()}`;
+                    resultBody2.append(`
+                                    <tr>
+                                    <td>${item.username}</td>
+                                    <td>${item.modeOfTransport}</td>
+                                    <td>${formattedDate}</td>
+                                    <td>
+                                        <button class="btn btn-success">Approve</button>
+                                        <button class="btn btn-danger">Decline</button>
+                                        </td>
+                                    </tr>
+                        `);
+                }
+                else {
+                    $("#resultTable2").hide();
+                    $("#alert2").show();
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

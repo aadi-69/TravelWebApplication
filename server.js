@@ -1,4 +1,5 @@
 const express = require('express');
+const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
 const bodyParser = require('body-parser');
@@ -64,7 +65,6 @@ app.get('/save', (req, res) => {
   // Save the document to the MongoDB collection using Promises
   travelData.save()
     .then(() => {
-      console.log('Form data saved to MongoDB:', travelData);
       res.send('Form data received and saved to MongoDB');
     })
     .catch((err) => {
@@ -104,7 +104,6 @@ app.get('/getHome', (req, res) => {
   res.sendFile(__dirname + '/public/home.html')
 })
 
-
 const loginSchema = new mongoose.Schema({
   email: String,
   username: String,
@@ -137,7 +136,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-
 app.post('/signup', async (req, res) => {
   const { email, username, password } = req.body;
 
@@ -161,6 +159,163 @@ app.post('/signup', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
+mongoose.createConnection('mongodb://localhost/Request', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const requestDb = mongoose.connection;
+requestDb.on('error', console.error.bind(console, 'MongoDB Request connection error:'));
+
+requestDb.once('open', () => {
+  console.log('Connected to MongoDB for Requests');
+});
+
+const requestSchema = new mongoose.Schema({
+  username: String,
+  ObjectID: String,
+  status: String
+});
+
+const RequestModel = requestDb.model('Request', requestSchema);
+
+mongoose.createConnection('mongodb://localhost/Pending', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const pendingDb = mongoose.connection;
+pendingDb.on('error', console.error.bind(console, 'MongoDB Request connection error:'));
+
+pendingDb.once('open', () => {
+  console.log('Connected to MongoDB for Pending');
+});
+
+const PendingSchema = new mongoose.Schema({
+  username: String,
+  ObjectID: String,
+  status: String
+});
+
+const PendingModel = requestDb.model('Pending', PendingSchema);
+
+app.get('/submitRequest', async (req, res) => {
+  const username = req.query.name;
+  const id = req.query.id;
+
+  console.log(username + " " + id);
+
+  const requestData = new RequestModel({ username, id, status: "false" });
+  await requestData.save().then(savedAccept => {
+  })
+    .catch(err => {
+      if (err.code === 11000) {
+        console.error('Duplicate key error:');
+      } else {
+        console.error('Error while saving:', err);
+      }
+    });
+
+  const pendingData = new PendingModel({ username, id, status: "false" });
+  await pendingData.save().then(savedAccept => {
+  })
+    .catch(err => {
+      if (err.code === 11000) {
+        console.error('Duplicate key error:');
+      } else {
+        console.error('Error while saving:', err);
+      }
+    });
+
+  res.status(200).send("");
+})
+
+app.get('/getDetailsForPendingRequest', async (req, res) => {
+  const username = req.query.name;
+  data = await PendingModel.find({ 'username': username });
+
+  if (data.length === 0) {
+    res.send("No new Requests");
+  } else {
+    const results = [];
+
+    for (const user of data) {
+      if (user._id) {
+        const fetchId = user._id;
+
+        const newData = await TravelModel.findById(fetchId);
+        if (newData) {
+          results.push(newData);
+        }
+      }
+    }
+
+    if (results.length === 0) {
+      res.send("No matching data found");
+    } else {
+      res.json(results);
+    }
+  }
+
+});
+
+app.get('/getStatus',async(req,res)=>{
+  let id = req.query.id;
+  id =await PendingModel.findById(id);
+
+  res.json(id);
+})
+
+app.get('/getDetailsForApprovalOrDenail', async (req, res) => {
+  const username = req.query.name;
+  const users = await PendingModel.find({});
+  const promises = [];
+
+  users.forEach(async (user) => {
+    const id = user._id;
+    const user2Promise = TravelModel.findById(id);
+    promises.push(user2Promise);
+  });
+
+  const user2Results = await Promise.all(promises);
+
+  // Now you can process the results
+  user2Results.forEach(async (user2) => {
+    if (user2 && user2.username === username) {
+      async function getUsername() {
+        const newusername = await PendingModel.findById(user2._id);
+        return newusername.username;
+      }
+
+      const updateUsername = await getUsername();
+
+      // console.log(updateUsername);
+
+      user2.username = updateUsername;
+
+      // console.log(user2);
+
+      user2 = JSON.stringify(user2);
+
+      const filePath = 'data.json';
+
+      // Write the JSON data to the file, overwriting any previous content
+      fs.writeFileSync(filePath, user2, 'utf-8');
+    }
+  });
+
+  const filePath = 'data.json';
+
+  // Read the JSON data from the file
+  const jsonData = fs.readFileSync(filePath, 'utf-8');
+
+  // Parse the JSON string into a JavaScript object
+  const data = JSON.parse(jsonData);
+
+  res.send(jsonData);
+});
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

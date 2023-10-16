@@ -84,7 +84,7 @@
 
             #home {
                 position: relative;
-                left: 220px;
+                left: 20px;
             }
 
             #hover-icon {
@@ -147,7 +147,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item active" id="home">
-                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="requests.html">Show Request <span class="sr-only">(current)</span></a>
                 </li>
                 <li>
                     <div id="hover-icon">
@@ -156,7 +156,7 @@
                             <div id="username"></div>
                             <a href="#">Profile</a>
                             <a href="#">Travel Request</a>
-                            <a href="index.html">Log Out</a>
+                            <a id="myLink" href="/">Log Out</a>
                         </div>
                     </div>
                 </li>
@@ -182,6 +182,17 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
+        function myFunction() {
+            sessionStorage.clear();
+            window.location.href = document.getElementById("myLink").getAttribute("href");
+        }
+
+        // Attach the onclick event handler to the anchor element
+        document.getElementById("myLink").onclick = function (event) {
+            event.preventDefault(); // Prevent the default navigation behavior
+            myFunction(); // Call your custom function
+        };
+
         $(document).ready(() => {
 
             if (sessionStorage.getItem("username") == null)
@@ -195,8 +206,7 @@
                 }).catch((error) => {
                     console.error('Fetch error:', error);
                 });
-            else
-            {
+            else {
                 $("#username").text("Hello " + sessionStorage.getItem("username") + "!");
                 console.log("debuing");
             }

@@ -201,7 +201,7 @@
                         method: 'GET',
                         success: function (data) {
 
-                            if (data.length === 0)
+                            if (data.length === 0 || data[0].username == sessionStorage.getItem('username'))
                                 nothingfound();
                             else {
                                 const resultBody = $("#resultBody");
@@ -263,11 +263,12 @@
                 method: 'GET',
                 success: (data) => {
                     console.log(data);
+                    sessionStorage.setItem("RequestObjectID",data[0]._id);
                     $("#detailsContent").html(`
                     Username: ${data[0].username}<br>
                     From: ${data[0].fromPlace}<br>
                     To: ${data[0].toPlace}<br>
-                    Date & Time: ${row.find("td:eq(1)").text()}<br>
+                    Date & Time: ${row.find("td:eq(2)").text()}<br>
                     Number of People: ${data[0].numOfPeople}<br>
                     Mode of Transport: ${data[0].modeOfTransport}<br>
                     `);
@@ -308,7 +309,18 @@
         });
 
         $("#confirm").click(() => {
+
+            $.ajax({
+                url: `/submitRequest?name=${sessionStorage.getItem('username')}&id=${sessionStorage.getItem('RequestObjectID')}`,
+                method: 'GET',
+                success: (data)=>{
+                    
+                }
+
+            });
+
             $("#cfmbooking").show();
+
             setTimeout(() => {
                 window.location.href = '/getHome'
             }, 2500)
