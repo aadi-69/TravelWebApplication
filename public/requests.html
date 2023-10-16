@@ -39,6 +39,23 @@
             </thead>
             <tbody id="resultBody"></tbody>
         </table>
+
+        <h1>Pending Approvals</h1>
+        <div class="alert alert-danger" role="alert" id="alert2">
+            Nothing to Approve/Decline at this moment!
+        </div>
+        <table id="resultTable2" class="table mt-4">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Mode of Transport</th>
+                    <th>Date & Time</th>
+                    <th>Approve/Decline</th>
+                </tr>
+            </thead>
+            <tbody id="resultBody2"></tbody>
+        </table>
+
     </div>
 
     <!-- Modal for displaying details -->
@@ -68,10 +85,12 @@
         $(document).ready(() => {
             $("#detailsModal").hide();
             $("#alert").hide();
+            $("#alert2").hide();
         });
 
         const username = sessionStorage.getItem('username');
         const resultBody = $("#resultBody");
+        const resultBody2 = $("#resultBody2");
 
         $.ajax({
             url: `/getDetailsForPendingRequest?name=${username}`,
@@ -101,8 +120,25 @@
                         `);
                     });
                 else {
-                    $("#resultTable").hide()
+                    $("#resultTable").hide();
                     $("#alert").show();
+                }
+            }
+        });
+
+        $.ajax({
+            url:`/getDetailsForApprovalOrDenail?name=${username}`,
+            method: 'GET',
+            success:(data)=>{
+                console.log(data)
+
+                if(data != "No new Approval/Denial Requests")
+                {
+                }
+                else
+                {
+                    $("#resultTable2").hide();
+                    $("#alert2").show(); 
                 }
             }
         });

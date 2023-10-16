@@ -234,18 +234,62 @@ app.get('/getDetailsForPendingRequest', async (req, res) => {
   const username = req.query.name;
   data = await PendingModel.find({ 'username': username });
 
-  if (data[0] == undefined)
-    res.send("No new Requests")
-  else {
-
-    const fetchId = data[0]._id;
-    if (fetchId == undefined)
-      res.send("No new Requests")
-    else {
-      newData = await TravelModel.find(fetchId);
-      res.json(newData);
+  if (data.length === 0) {
+    res.send("No new Requests");
+  } else {
+    const results = [];
+  
+    for (const user of data) {
+      if (user._id) {
+        const fetchId = user._id;
+  
+        const newData = await TravelModel.findById(fetchId);
+        if (newData) {
+          results.push(newData);
+        }
+      }
+    }
+  
+    if (results.length === 0) {
+      res.send("No matching data found");
+    } else {
+      res.json(results);
     }
   }
+  
+});
+
+app.get('/getDetailsForApprovalOrDenail', async (req, res) => {
+  const username = req.query.name;
+  let data = '';
+  const users = await PendingModel.find({});
+  const promises = [];
+
+  users.forEach(async (user) => {
+    const id = user._id;
+    const user2Promise = TravelModel.findById(id);
+    promises.push(user2Promise);
+  });
+
+  const user2Results = await Promise.all(promises);
+
+  // Now you can process the results
+  user2Results.forEach((user2) => {
+    if (user2 && user2.username === username) {
+      data = user2;
+    }
+  });
+
+  if (data) {
+    res.json(data);
+  }
+  else {
+    res.send("No new Approval/Denial Requests");
+  }
+
+
+
+
 });
 
 app.listen(port, () => {
