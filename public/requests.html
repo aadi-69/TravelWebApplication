@@ -19,12 +19,30 @@
         #status {
             background-color: rgb(251, 176, 176);
         }
+
+        #status2 {
+            background-color: rgb(164, 247, 159);
+        }
+
+        #reload {
+            position: relative;
+            left: 1137px;
+            top: 60px;
+        }
+
+        #back {
+            position: relative;
+            left: 1150px;
+            top: 60px;
+        }
     </style>
 </head>
 
 <body>
     <div class="container mt-4">
-        <h1>Pending Requests</h1>
+        <button type="button" class="btn btn-warning" onclick="window.location.reload()" id="reload">Refresh</button>
+        <button type="button" class="btn btn-danger" onclick="getHome()" id="back">Back</button>
+        <h1>Pending Requests </h1>
         <div class="alert alert-danger" role="alert" id="alert">
             You have no new requests!
         </div>
@@ -82,6 +100,10 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
     <script>
+        function getHome() {
+            window.location.href = '/getHome'
+        }
+
         $(document).ready(() => {
             $("#detailsModal").hide();
             $("#alert").hide();
@@ -101,23 +123,35 @@
                 if (data != "No new Requests")
 
                     data.forEach((item) => {
-                        function getStatus() {
-                            if (item.status == "true")
-                                return "Accepted";
-                            else
-                                return "Pending";
-                        }
 
-                        const dateTime = new Date(item.dateTime);
-                        const formattedDate = `${dateTime.getHours()}:${dateTime.getMinutes()} ${dateTime.getDate()}/${dateTime.getMonth() + 1}/${dateTime.getFullYear()}`;
-                        resultBody.append(`
+                        fetch(`/getStatus?id=${item._id}`).then((data) => {
+                            return data.text();
+                        }).then((data) => {
+                            data = JSON.parse(data)
+
+                            const dateTime = new Date(item.dateTime);
+                            const formattedDate = `${dateTime.getHours()}:${dateTime.getMinutes()} ${dateTime.getDate()}/${dateTime.getMonth() + 1}/${dateTime.getFullYear()}`;
+
+                            if (data.status != "true")
+                                resultBody.append(`
                                     <tr>
                                     <td>${item.username}</td>
                                     <td>${item.modeOfTransport}</td>
                                     <td>${formattedDate}</td>
-                                    <td id="status">${getStatus()}</td>
+                                    <td id="status">Pending</td>
+                                    </tr>
+                        `)
+                            else
+                                resultBody.append(`
+                                    <tr>
+                                    <td>${item.username}</td>
+                                    <td>${item.modeOfTransport}</td>
+                                    <td>${formattedDate}</td>
+                                    <td id="status2">Approved</td>
                                     </tr>
                         `);
+
+                        });
                     });
                 else {
                     $("#resultTable").hide();

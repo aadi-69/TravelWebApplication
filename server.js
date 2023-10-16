@@ -260,6 +260,13 @@ app.get('/getDetailsForPendingRequest', async (req, res) => {
 
 });
 
+app.get('/getStatus',async(req,res)=>{
+  let id = req.query.id;
+  id =await PendingModel.findById(id);
+
+  res.json(id);
+})
+
 app.get('/getDetailsForApprovalOrDenail', async (req, res) => {
   const username = req.query.name;
   const users = await PendingModel.find({});
