@@ -1,4 +1,5 @@
 const express = require('express');
+const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
 const bodyParser = require('body-parser');
@@ -261,7 +262,6 @@ app.get('/getDetailsForPendingRequest', async (req, res) => {
 
 app.get('/getDetailsForApprovalOrDenail', async (req, res) => {
   const username = req.query.name;
-  let data = [];
   const users = await PendingModel.find({});
   const promises = [];
 
@@ -283,23 +283,30 @@ app.get('/getDetailsForApprovalOrDenail', async (req, res) => {
 
       const updateUsername = await getUsername();
 
-      console.log(updateUsername);
+      // console.log(updateUsername);
 
       user2.username = updateUsername;
 
-      console.log(user2);
+      // console.log(user2);
 
-      data.push(user2);
+      user2 = JSON.stringify(user2);
+
+      const filePath = 'data.json';
+
+      // Write the JSON data to the file, overwriting any previous content
+      fs.writeFileSync(filePath, user2, 'utf-8');
     }
   });
 
-  console.log(data+" chek")
+  const filePath = 'data.json';
 
-  if (data.length > 0) {
-    res.json(data);
-  } else {
-    res.send("No new Approval/Denial Requests");
-  }
+  // Read the JSON data from the file
+  const jsonData = fs.readFileSync(filePath, 'utf-8');
+
+  // Parse the JSON string into a JavaScript object
+  const data = JSON.parse(jsonData);
+
+  res.send(jsonData);
 });
 
 

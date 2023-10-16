@@ -130,14 +130,16 @@
             url: `/getDetailsForApprovalOrDenail?name=${username}`,
             method: 'GET',
             success: (data) => {
-                console.log(data)
+                // console.log(data)
 
                 if (data != "No new Approval/Denial Requests") {
-                    data.forEach((item) => {
 
-                        const dateTime = new Date(item.dateTime);
-                        const formattedDate = `${dateTime.getHours()}:${dateTime.getMinutes()} ${dateTime.getDate()}/${dateTime.getMonth() + 1}/${dateTime.getFullYear()}`;
-                        resultBody2.append(`
+                    const item = JSON.parse(data);
+                    console.log(item);
+
+                    const dateTime = new Date(item.dateTime);
+                    const formattedDate = `${dateTime.getHours()}:${dateTime.getMinutes()} ${dateTime.getDate()}/${dateTime.getMonth() + 1}/${dateTime.getFullYear()}`;
+                    resultBody2.append(`
                                     <tr>
                                     <td>${item.username}</td>
                                     <td>${item.modeOfTransport}</td>
@@ -148,7 +150,8 @@
                                         </td>
                                     </tr>
                         `);
-                    });
+
+
                 }
                 else {
                     $("#resultTable2").hide();
