@@ -1,0 +1,1 @@
+Welcome to TravelAgent, a web application designed to make your travel planning and sharing experience seamless and enjoyable. Whether you want to post your travel plans, find exciting journeys, or connect with fellow travelers, TravelAgent has got you covered. 
